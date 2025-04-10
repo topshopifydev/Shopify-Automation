@@ -31,7 +31,7 @@ test("Verify Whatsapp share button", async ({ page }) => {
   const whatsappLink = page.locator('a[data-action="share/whatsapp/share"]');
   await expect(whatsappLink).toBeVisible();
 });
-test("Verify Facebook share button", async ({ page }) => {
+test("Verify whatsapp share button in product page", async ({ page }) => {
   await page.goto("https://shipping-per-item.myshopify.com/");
   await page.locator("#password").fill(process.env.password ?? "");
   await page.getByRole("button", { name: "Enter" }).click();
