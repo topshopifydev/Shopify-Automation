@@ -1,5 +1,4 @@
 import { test, expect } from "@playwright/test";
-import { log } from "node:console";
 
 test("Meetanshi PDF Catalg", async ({
   page,
