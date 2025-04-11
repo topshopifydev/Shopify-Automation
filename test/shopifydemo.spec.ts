@@ -68,7 +68,7 @@ test("Meetanshi shipping per item", async ({
   await expect(page.locator("#shipping_methods")).toContainText(
     "3 To 4 Business Day"
   );
-  console.log("Shipping method selected successfully");
+  console.log("Shipping per item rate selected successfully");
   
 });
 test("Meetanshi shipping Flow Rules", async ({
@@ -98,6 +98,6 @@ test("Meetanshi shipping Flow Rules", async ({
   // Select shipping method (verify .i4DWM selector)
   await page.locator(".i4DWM").click();
   await expect(page.getByText("Rate Name")).toBeVisible();
-  console.log("Shipping zipcode method visible successfully");
+  console.log("Shipping zipcode Rate visible successfully");
   
 });
