@@ -5,7 +5,6 @@ test.describe("meetanshi shopify demo Testcases", () => {
     await page.locator("#password").fill(process.env.PASSWORD ?? "");
     await page.getByRole("button", { name: "Enter" }).click();
   }
-  test;
   test("opens PDF preview", async ({ page, context }) => {
     await page.goto("https://pdfdemo.myshopify.com/");
     await enterStorePassword(page, process.env.PASSWORD ?? "");
