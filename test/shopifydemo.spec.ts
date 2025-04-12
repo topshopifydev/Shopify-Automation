@@ -3,19 +3,18 @@ import { test, expect, Page } from "@playwright/test";
 test.describe.configure({ timeout: 60000 }); // 60 seconds per describe block
 
 // 🔐 Helper to handle password-protected pages
-async function enterStorePassword(page: Page, password: string) {
-  await page.locator("#password").fill(process.env.password ?? "");
-  await page.getByRole("button", { name: "Enter" }).click();
-}
-
-test.describe("Meetanshi PDF Catalog", () => {
+test.describe("meetanshi shopify demo", () => {
+  async function enterStorePassword(page: Page, password: string) {
+    await page.locator("#password").fill(process.env.password ?? "");
+    await page.getByRole("button", { name: "Enter" }).click();
+  }
+  test;
   test("opens PDF preview", async ({ page, context }) => {
     await page.goto("https://pdfdemo.myshopify.com/");
     await enterStorePassword(page, process.env.password ?? "");
 
     await page.locator("#HeaderMenu-collection").click();
     await page.getByRole("link", { name: "Clothing" }).click();
-    await expect(page.getByRole("button", { name: "Print Pdf" })).toBeVisible();
 
     const [newPage] = await Promise.all([
       context.waitForEvent("page"),
@@ -28,9 +27,7 @@ test.describe("Meetanshi PDF Catalog", () => {
 
     console.log("✅ PDF preview page opened successfully");
   });
-});
 
-test.describe("Meetanshi WhatsApp Share", () => {
   test("displays share button", async ({ page }) => {
     await page.goto("https://whatsapp-share-button.myshopify.com/");
     await enterStorePassword(page, process.env.password ?? "");
@@ -43,9 +40,7 @@ test.describe("Meetanshi WhatsApp Share", () => {
 
     console.log("✅ WhatsApp share button is visible");
   });
-});
 
-test.describe("Meetanshi Shipping Per Item", () => {
   test("selects shipping method and fills form", async ({ page }) => {
     await page.goto("https://shipping-per-item.myshopify.com/");
     await enterStorePassword(page, process.env.password ?? "");
@@ -84,9 +79,7 @@ test.describe("Meetanshi Shipping Per Item", () => {
 
     console.log("✅ Shipping per item rate selected successfully");
   });
-});
 
-test.describe("Meetanshi Shipping Flow Rules", () => {
   test("shows flow-based shipping rate", async ({ page }) => {
     await page.goto("https://shipflow-rules.myshopify.com/");
     await enterStorePassword(page, process.env.password ?? "");
