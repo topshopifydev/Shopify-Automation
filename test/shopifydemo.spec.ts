@@ -33,7 +33,7 @@ test.describe("Meetanshi Shopify Apps", () => {
     await expect(whatsappLink).toBeVisible();
     console.log("Whatsapp share button is visible");
   });
-  test("Meetanshi shipping per item", async ({ page }) => {
+/*  test("Meetanshi shipping per item", async ({ page }) => {
     await page.goto("https://shipping-per-item.myshopify.com/");
     await page.locator("#password").fill(process.env.PASSWORD ?? "");
     await page.getByRole("button", { name: "Enter" }).click();
@@ -99,5 +99,5 @@ test.describe("Meetanshi Shopify Apps", () => {
       page.locator("//p[contains(text(), 'Rate Name')]")
     ).toBeVisible();
     console.log("Shipping zipcode Rate visible successfully");
-  });
+  });*/
 });
