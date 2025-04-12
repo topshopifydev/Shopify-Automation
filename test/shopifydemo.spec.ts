@@ -1,9 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 
-test.describe.configure({ timeout: 60000 }); // 60 seconds per describe block
-
-// 🔐 Helper to handle password-protected pages
-test.describe("meetanshi shopify demo", () => {
+test.describe("meetanshi shopify demo Testcases", () => {
   async function enterStorePassword(page: Page, password: string) {
     await page.locator("#password").fill(process.env.PASSWORD ?? "");
     await page.getByRole("button", { name: "Enter" }).click();
@@ -68,9 +65,9 @@ test.describe("meetanshi shopify demo", () => {
     await page.getByRole("textbox", { name: "Last name" }).fill("tester");
     await page
       .getByRole("combobox", { name: "Address" })
-      .fill("waghawadi road");
-    await page.getByRole("textbox", { name: "City" }).fill("bhavnagar");
-    await page.getByRole("textbox", { name: "PIN code" }).fill("364001");
+      .fill("Waghawadi Road Vidhyanagar");
+    await page.getByRole("textbox", { name: "City" }).fill("Bhavnagar");
+    await page.getByRole("textbox", { name: "PIN code" }).fill("364002");
 
     await page.locator(".i4DWM").click();
     await expect(
@@ -99,12 +96,12 @@ test.describe("meetanshi shopify demo", () => {
     await page.getByRole("textbox", { name: "Last name" }).fill("tester");
     await page
       .getByRole("combobox", { name: "Address" })
-      .fill("waghawadi road");
-    await page.getByRole("textbox", { name: "City" }).fill("bhavnagar");
+      .fill("Waghawadi Road Vidhyanagar");
+    await page.getByRole("textbox", { name: "City" }).fill("Bhavnagar");
 
     const pinCodeInput = page.getByRole("textbox", { name: "PIN code" });
     await expect(pinCodeInput).toBeVisible({ timeout: 2000 });
-    await pinCodeInput.fill("364005");
+    await pinCodeInput.fill("364002");
 
     await page.locator(".i4DWM").click();
     const rateNameLocator = page.locator("//p[text()='Rate Name']");
