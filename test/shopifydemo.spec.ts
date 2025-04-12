@@ -122,6 +122,132 @@ test.describe("Meetanshi Shopify Apps", () => {
       await expect(page.getByRole("button", { name })).toBeVisible();
     }
     console.log("All Meetanshi elements are visible");
-    
+  });
+  test.use({
+    permissions: ["geolocation"],
+    geolocation: { latitude: 12.9716, longitude: 77.5946 }, // Optional if needed
+    locale: "en-US",
+  });
+  test("MIT Quick Order Form COD", async ({ page, context }) => {
+    // Grant permission explicitly for this origin
+    await context.grantPermissions(["geolocation"], {
+      origin: "https://cod-order.myshopify.com",
+    });
+
+    await page.goto("https://cod-order.myshopify.com/");
+    await page.locator("#password").fill("mit");
+    await page.getByRole("button", { name: "Enter" }).click();
+
+    await page.locator("#HeaderMenu-catalog").click();
+    await page.getByRole("link", { name: "Freak 5 EP" }).click();
+    await page.waitForLoadState("domcontentloaded");
+    await expect(page.locator("#inlineformfrontend")).toBeVisible();
+  });
+  test("Fill MIT Quick Order Form", async ({ page, context }) => {
+    // Grant permission explicitly for this origin
+    await context.grantPermissions(["geolocation"], {
+      origin: "https://cod-order.myshopify.com",
+    });
+
+    await page.goto("https://cod-order.myshopify.com/");
+    await page.locator("#password").fill("mit");
+    await page.getByRole("button", { name: "Enter" }).click();
+
+    await page.locator("#HeaderMenu-catalog").click();
+    await page.getByRole("link", { name: "Freak 5 EP" }).click();
+    await page.waitForLoadState("domcontentloaded");
+    await expect(page.locator("#inlineformfrontend")).toBeVisible();
+    await page.getByRole("textbox", { name: "First Name" }).fill("meetanshi");
+    await page.getByRole("textbox", { name: "Last Name" }).fill("tester");
+    await page
+      .locator('input[name="Email"]')
+      .fill("meetanshi.tester@yopmail.com");
+    await page.locator("#Country").selectOption("India");
+    await page.locator("#State").selectOption("Gujarat");
+    await page.locator("#City").selectOption("Bhavnagar");
+    await page.getByRole("textbox", { name: "Address" }).fill("Waghawadi Road");
+    await page.getByRole("button", { name: "Place COD Order" }).click();
+    await expect(page.locator("#ql-editor")).toBeVisible();
+    await expect(
+      page.getByText("Keep the order number for your reference :)")
+    ).toBeVisible();
+  });
+  test("MIT Request Quote & Hide Price", async ({ page }) => {
+    await page.goto("https://callforpricelaravel.myshopify.com/");
+    await page.locator("#password").fill("mit");
+    await page.getByRole("button", { name: "Enter" }).click();
+    const buttons = page.getByRole("button", { name: "Request for Quote" });
+    await expect(buttons).toHaveCount(8);
+  });
+  test("MIT Request Quote & Hide Price in collection page", async ({
+    page,
+  }) => {
+    await page.goto("https://callforpricelaravel.myshopify.com/");
+    await page.locator("#password").fill("mit");
+    await page.getByRole("button", { name: "Enter" }).click();
+    await page.getByRole("link", { name: "Catalog" }).click();
+    await expect(page).toHaveURL(/\/collections\/all/);
+    const buttons = page.getByRole("button", { name: "Request for Quote" });
+
+    await expect(buttons.nth(0)).toBeVisible();
+    await expect(buttons.nth(15)).toBeVisible();
+  });
+  test("Check MIT Request Quote Modal Popup", async ({ page }) => {
+    await page.goto("https://callforpricelaravel.myshopify.com/");
+    await page.locator("#password").fill("mit");
+    await page.getByRole("button", { name: "Enter" }).click();
+    await page.getByRole("link", { name: "Catalog" }).click();
+    await expect(page).toHaveURL(/\/collections\/all/);
+    await page
+      .getByRole("button", { name: "Request for Quote" })
+      .nth(0)
+      .click();
+    expect(page.locator("#cfpmodal")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Quote Inquiry Form" })
+    ).toBeVisible();
+  });
+  test("Fill form of MIT Request Quote and assert response", async ({
+    page,
+  }) => {
+    await page.goto("https://callforpricelaravel.myshopify.com/");
+    await page.locator("#password").fill("mit");
+    await page.getByRole("button", { name: "Enter" }).click();
+    await page.getByRole("link", { name: "Catalog" }).click();
+
+    await expect(page).toHaveURL(/\/collections\/all/);
+    await page
+      .getByRole("button", { name: "Request for Quote" })
+      .nth(0)
+      .click();
+
+    await expect(page.locator("#cfpmodal")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Quote Inquiry Form" })
+    ).toBeVisible();
+
+    await page.locator("#cname").fill("meetanshi");
+    await page.locator("#email_address").fill("meetanshi.tester@yopmail.com");
+    await page.locator("#country").selectOption("India");
+    await page.locator("#phone_number").fill("1234567890");
+    await page
+      .locator("#comment")
+      .fill("Hi, I want to know about this product.");
+
+    // Intercept the POST request and wait for the response
+    const [response] = await Promise.all([
+      page.waitForResponse(
+        (resp) =>
+          resp.url().includes("/api/inquiry") &&
+          resp.request().method() === "POST"
+      ),
+      page.getByRole("button", { name: "Submit" }).click(),
+    ]);
+
+    const json = await response.json();
+    expect(json).toEqual({
+      message: "Inquiry has been sent successfully.",
+      status: "true",
+    });
   });
 });
