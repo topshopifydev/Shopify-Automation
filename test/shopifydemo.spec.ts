@@ -100,4 +100,26 @@ test.describe("Meetanshi Shopify Apps", () => {
     ).toBeVisible();
     console.log("Shipping zipcode Rate visible successfully");
   });
+  test("Check visibility of Meetanshi elements", async ({ page }) => {
+    await page.goto("https://apps.shopify.com/search?q=meetanshi"); // replace with your actual URL
+    await page.waitForLoadState("domcontentloaded");
+    const links = [
+      "Meetanshi WhatsApp Chat",
+      "Meetanshi PDF Product Catalog",
+      "Meetanshi WhatsApp Share",
+      "Meetanshi AI Content Generator",
+      "Meetanshi Shipping Per Item",
+      "Meetanshi Recent Sales Popup",
+      "Meet Collections Import",
+      "MIT Request Quote & Hide Price",
+      "Meetanshi Countdown Timer Bar",
+      "MIT Festival Effects & Decor",
+      "MIT Quick Order Form COD",
+      "ShipFlow: Shipping Rules",
+    ];
+
+    for (const name of links) {
+      await expect(page.getByRole("button", { name })).toBeVisible();
+    }
+  });
 });
