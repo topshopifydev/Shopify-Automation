@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-test.describe.configure({ timeout: 40000 }); // 60 seconds
+//test.describe.configure({ timeout: 40000 }); // 60 seconds
 
 test.describe("Meetanshi Shopify Apps", () => {
   test("Meetanshi PDF Catalog", async ({ page, context }) => {
