@@ -1,12 +1,16 @@
-import { test, expect, Page } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 
-test.describe("meetanshi shopify demo Testcases", () => {
-  test("opens PDF preview", async ({ page, context }) => {
+test.describe.configure({ timeout: 10000 }); // 60 seconds
+
+test.describe("Meetanshi Shopify Apps", () => {
+  test("Meetanshi PDF Catalog", async ({ page, context }) => {
     await page.goto("https://pdfdemo.myshopify.com/");
-    await enterStorePassword(page, process.env.PASSWORD ?? "");
-
+    await page.locator("#password").fill(process.env.password ?? "");
+    await page.getByRole("button", { name: "Enter" }).click();
     await page.locator("#HeaderMenu-collection").click();
     await page.getByRole("link", { name: "Clothing" }).click();
+
+    await expect(page.getByRole("button", { name: "Print Pdf" })).toBeVisible();
 
     const [newPage] = await Promise.all([
       context.waitForEvent("page"),
@@ -16,41 +20,36 @@ test.describe("meetanshi shopify demo Testcases", () => {
     await newPage.waitForLoadState("domcontentloaded");
     const title = await newPage.title();
     expect(title).toBe("Pdf Preview");
-
-    console.log("✅ PDF preview page opened successfully");
+    console.log("PDF preview page opened successfully");
   });
 
-  test("displays share button", async ({ page }) => {
+  test("Meetanshi Whatsapp share", async ({ page }) => {
     await page.goto("https://whatsapp-share-button.myshopify.com/");
-    await enterStorePassword(page, process.env.PASSWORD ?? "");
-
+    await page.locator("#password").fill(process.env.password ?? "");
+    await page.getByRole("button", { name: "Enter" }).click();
     await page.locator("#HeaderMenu-catalog").click();
     await page.getByRole("link", { name: "Freak 5 EP" }).click();
-
     const whatsappLink = page.locator('a[data-action="share/whatsapp/share"]');
     await expect(whatsappLink).toBeVisible();
-
-    console.log("✅ WhatsApp share button is visible");
+    console.log("Whatsapp share button is visible");
   });
-
-  test("selects shipping method and fills form", async ({ page }) => {
+  test("Meetanshi shipping per item", async ({ page }) => {
     await page.goto("https://shipping-per-item.myshopify.com/");
-    await enterStorePassword(page, process.env.PASSWORD ?? "");
-
+    await page.locator("#password").fill(process.env.password ?? "");
+    await page.getByRole("button", { name: "Enter" }).click();
     await page
       .locator("#shopify-section-sections--23418919026976__header")
       .getByRole("link", { name: "Catalog" })
       .click();
-
     await page
       .getByRole("link", { name: "The Multi-managed Snowboard" })
       .click();
     await page.getByRole("button", { name: "Add to cart" }).click();
 
     const checkoutButton = page.locator("#CartDrawer-Checkout");
-    await expect(checkoutButton).toBeVisible({ timeout: 10000 });
-    await checkoutButton.click();
-
+    await checkoutButton.waitFor({ state: "visible", timeout: 10000 }); // Wait for visibility
+    await checkoutButton.click(); // Click after ensuring visibility
+    // Fill checkout form with correct labels from snapshot
     await page
       .getByRole("textbox", { name: "Email or mobile phone number" })
       .fill("meetanshi.tester@yopmail.com");
@@ -58,30 +57,30 @@ test.describe("meetanshi shopify demo Testcases", () => {
       .getByRole("textbox", { name: "First name (optional)" })
       .fill("meetanshi");
     await page.getByRole("textbox", { name: "Last name" }).fill("tester");
+    // Use combobox for Address field
     await page
       .getByRole("combobox", { name: "Address" })
-      .fill("Waghawadi Road Vidhyanagar");
-    await page.getByRole("textbox", { name: "City" }).fill("Bhavnagar");
-    await page.getByRole("textbox", { name: "PIN code" }).fill("364002");
+      .fill("waghawadi road"); // Or use selectOption if specific options are required
+    await page.getByRole("textbox", { name: "City" }).fill("bhavnagar");
+    await page.getByRole("textbox", { name: "PIN code" }).fill("364001");
 
+    // Select shipping method (verify .i4DWM selector)
     await page.locator(".i4DWM").click();
     await expect(
       page.locator("//p[contains(text(), '3 To 4 Business Day')]")
     ).toBeVisible();
-
-    console.log("✅ Shipping per item rate selected successfully");
+    console.log("Shipping per item rate selected successfully");
   });
-
-  test("shows flow-based shipping rate", async ({ page }) => {
+  test("Meetanshi shipping Flow Rules", async ({ page }) => {
     await page.goto("https://shipflow-rules.myshopify.com/");
-    await enterStorePassword(page, process.env.PASSWORD ?? "");
-
+    await page.locator("#password").fill(process.env.password ?? "");
+    await page.getByRole("button", { name: "Enter" }).click();
     await page.getByRole("link", { name: "Catalog" }).click();
     await page.getByRole("link", { name: "Freak 5 EP" }).click();
     await page.getByRole("button", { name: "Add to cart" }).click();
     await page.locator(".cart-count-bubble").click();
     await page.locator("#checkout").click();
-
+    // Fill checkout form with correct labels from snapshot
     await page
       .getByRole("textbox", { name: "Email or mobile phone number" })
       .fill("meetanshi.tester@yopmail.com");
@@ -89,23 +88,19 @@ test.describe("meetanshi shopify demo Testcases", () => {
       .getByRole("textbox", { name: "First name (optional)" })
       .fill("meetanshi");
     await page.getByRole("textbox", { name: "Last name" }).fill("tester");
+    // Use combobox for Address field
     await page
       .getByRole("combobox", { name: "Address" })
-      .fill("Waghawadi Road Vidhyanagar");
-    await page.getByRole("textbox", { name: "City" }).fill("Bhavnagar");
-
+      .fill("waghawadi road"); // Or use selectOption if specific options are required
+    await page.getByRole("textbox", { name: "City" }).fill("bhavnagar");
     const pinCodeInput = page.getByRole("textbox", { name: "PIN code" });
-    await expect(pinCodeInput).toBeVisible({ timeout: 2000 });
-    await pinCodeInput.fill("364002");
-
+    await pinCodeInput.waitFor({ state: "visible", timeout: 1000 });
+    await pinCodeInput.fill("364005");
+    // Select shipping method (verify .i4DWM selector)
     await page.locator(".i4DWM").click();
     const rateNameLocator = page.locator("//p[text()='Rate Name']");
-    await expect(rateNameLocator).toBeVisible();
-
-    console.log("✅ Shipping zip code rate displayed successfully");
+    await rateNameLocator.waitFor({ state: "visible" });
+    expect(await rateNameLocator.isVisible()).toBe(true);
+    console.log("Shipping zipcode Rate visible successfully");
   });
 });
-async function enterStorePassword(page: Page, password: string) {
-  await page.locator("#password").fill(process.env.PASSWORD ?? "");
-  await page.getByRole("button", { name: "Enter" }).click();
-}
