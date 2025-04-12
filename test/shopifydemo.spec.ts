@@ -5,13 +5,13 @@ test.describe.configure({ timeout: 60000 }); // 60 seconds per describe block
 // 🔐 Helper to handle password-protected pages
 test.describe("meetanshi shopify demo", () => {
   async function enterStorePassword(page: Page, password: string) {
-    await page.locator("#password").fill(process.env.password ?? "");
+    await page.locator("#password").fill(process.env.PASSWORD ?? "");
     await page.getByRole("button", { name: "Enter" }).click();
   }
   test;
   test("opens PDF preview", async ({ page, context }) => {
     await page.goto("https://pdfdemo.myshopify.com/");
-    await enterStorePassword(page, process.env.password ?? "");
+    await enterStorePassword(page, process.env.PASSWORD ?? "");
 
     await page.locator("#HeaderMenu-collection").click();
     await page.getByRole("link", { name: "Clothing" }).click();
@@ -30,7 +30,7 @@ test.describe("meetanshi shopify demo", () => {
 
   test("displays share button", async ({ page }) => {
     await page.goto("https://whatsapp-share-button.myshopify.com/");
-    await enterStorePassword(page, process.env.password ?? "");
+    await enterStorePassword(page, process.env.PASSWORD ?? "");
 
     await page.locator("#HeaderMenu-catalog").click();
     await page.getByRole("link", { name: "Freak 5 EP" }).click();
@@ -43,7 +43,7 @@ test.describe("meetanshi shopify demo", () => {
 
   test("selects shipping method and fills form", async ({ page }) => {
     await page.goto("https://shipping-per-item.myshopify.com/");
-    await enterStorePassword(page, process.env.password ?? "");
+    await enterStorePassword(page, process.env.PASSWORD ?? "");
 
     await page
       .locator("#shopify-section-sections--23418919026976__header")
@@ -82,7 +82,7 @@ test.describe("meetanshi shopify demo", () => {
 
   test("shows flow-based shipping rate", async ({ page }) => {
     await page.goto("https://shipflow-rules.myshopify.com/");
-    await enterStorePassword(page, process.env.password ?? "");
+    await enterStorePassword(page, process.env.PASSWORD ?? "");
 
     await page.getByRole("link", { name: "Catalog" }).click();
     await page.getByRole("link", { name: "Freak 5 EP" }).click();
