@@ -25,7 +25,7 @@ test.describe("Meetanshi Shopify Apps", () => {
 
   test("Meetanshi Whatsapp share", async ({ page }) => {
     await page.goto("https://whatsapp-share-button.myshopify.com/");
-    await page.locator("#password").fill(process.env.PASSWORD ?? "");
+    await page.locator("#password").fill("mit");
     await page.getByRole("button", { name: "Enter" }).click();
     await page.locator("#HeaderMenu-catalog").click();
     await page.getByRole("link", { name: "Freak 5 EP" }).click();
@@ -35,7 +35,7 @@ test.describe("Meetanshi Shopify Apps", () => {
   });
   test("Meetanshi shipping per item", async ({ page }) => {
     await page.goto("https://shipping-per-item.myshopify.com/");
-    await page.locator("#password").fill(process.env.PASSWORD ?? "");
+    await page.locator("#password").fill("mit");
     await page.getByRole("button", { name: "Enter" }).click();
     await page
       .locator("#shopify-section-sections--23418919026976__header")
@@ -72,7 +72,7 @@ test.describe("Meetanshi Shopify Apps", () => {
   });
   test("Meetanshi shipping Flow Rules", async ({ page }) => {
     await page.goto("https://shipflow-rules.myshopify.com/");
-    await page.locator("#password").fill(process.env.PASSWORD ?? "");
+    await page.locator("#password").fill("mit");
     await page.getByRole("button", { name: "Enter" }).click();
     await page.getByRole("link", { name: "Catalog" }).click();
     await page.getByRole("link", { name: "Freak 5 EP" }).click();
