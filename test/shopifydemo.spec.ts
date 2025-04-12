@@ -5,7 +5,7 @@ test.describe.configure({ timeout: 60000 }); // 60 seconds
 test.describe("Meetanshi Shopify Apps", () => {
   test("Meetanshi PDF Catalog", async ({ page, context }) => {
     await page.goto("https://pdfdemo.myshopify.com/");
-    await page.locator("#password").fill(process.env.PASSWORD ?? "");
+    await page.locator("#password").fill("mit");
     await page.getByRole("button", { name: "Enter" }).click();
     await page.locator("#HeaderMenu-collection").click();
     await page.getByRole("link", { name: "Clothing" }).click();
@@ -121,5 +121,7 @@ test.describe("Meetanshi Shopify Apps", () => {
     for (const name of links) {
       await expect(page.getByRole("button", { name })).toBeVisible();
     }
+    console.log("All Meetanshi elements are visible");
+    
   });
 });
