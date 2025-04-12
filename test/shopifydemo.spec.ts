@@ -1,10 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 
 test.describe("meetanshi shopify demo Testcases", () => {
-  async function enterStorePassword(page: Page, password: string) {
-    await page.locator("#password").fill(process.env.PASSWORD ?? "");
-    await page.getByRole("button", { name: "Enter" }).click();
-  }
   test("opens PDF preview", async ({ page, context }) => {
     await page.goto("https://pdfdemo.myshopify.com/");
     await enterStorePassword(page, process.env.PASSWORD ?? "");
@@ -109,3 +105,7 @@ test.describe("meetanshi shopify demo Testcases", () => {
     console.log("✅ Shipping zip code rate displayed successfully");
   });
 });
+async function enterStorePassword(page: Page, password: string) {
+  await page.locator("#password").fill(process.env.PASSWORD ?? "");
+  await page.getByRole("button", { name: "Enter" }).click();
+}
