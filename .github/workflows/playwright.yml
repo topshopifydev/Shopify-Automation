@@ -38,7 +38,7 @@ jobs:
           path: playwright-report/
           retention-days: 30
 
-  deploy:
+  deploy: # Deploy Playwright Report URL: https://<your-github-username>.github.io/<repo-name>/
     name: Deploy Playwright Report to GitHub Pages
     if: always() # ✅ Always deploy report
     runs-on: ubuntu-latest
