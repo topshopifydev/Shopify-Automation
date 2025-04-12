@@ -2,9 +2,9 @@ name: Playwright Tests and Report Deployment
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
   pull_request:
-    branches: [ main, master ]
+    branches: [main, master]
 
 jobs:
   test:
@@ -24,14 +24,14 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
-      - name: Run Playwright tests
-        run: npx playwright test
+      - name: Run Playwright tests with HTML report
+        run: npx playwright test --reporter=html
         env:
           password: ${{ secrets.PASSWORD }}
-        continue-on-error: true  # 🔴 Don't stop workflow on test failure
+        continue-on-error: true # ✅ Continue even if tests fail
 
       - name: Upload Playwright report as artifact
-        if: always()  # ✅ Always run this step, even if previous steps failed
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
@@ -39,20 +39,24 @@ jobs:
           retention-days: 30
 
   deploy:
-    name: Deploy report to GitHub Pages
-    if: always()  # ✅ Always run, even if tests fail
+    name: Deploy Playwright Report to GitHub Pages
+    if: always() # ✅ Always deploy report
     runs-on: ubuntu-latest
-    needs: test  # ✅ Depends on test job
+    needs: test
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download artifact
+      - name: Download Playwright report artifact
         uses: actions/download-artifact@v4
         with:
           name: playwright-report
           path: ./playwright-report
 
-      - name: Deploy report to GitHub Pages
+      - name: Add .nojekyll to allow asset folders like _trace or _assets
+        run: touch ./playwright-report/.nojekyll
+
+      - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
