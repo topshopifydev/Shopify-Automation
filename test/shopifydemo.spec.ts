@@ -1,9 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-test("Meetanshi PDF Catalg", async ({
-  page,
-  context,
-}) => {
+test("Meetanshi PDF Catalog", async ({ page, context }) => {
   await page.goto("https://pdfdemo.myshopify.com/");
   await page.locator("#password").fill(process.env.password ?? "");
   await page.getByRole("button", { name: "Enter" }).click();
@@ -21,7 +18,6 @@ test("Meetanshi PDF Catalg", async ({
   const title = await newPage.title();
   expect(title).toBe("Pdf Preview");
   console.log("PDF preview page opened successfully");
-  
 });
 
 test("Meetanshi Whatsapp share", async ({ page }) => {
@@ -33,11 +29,8 @@ test("Meetanshi Whatsapp share", async ({ page }) => {
   const whatsappLink = page.locator('a[data-action="share/whatsapp/share"]');
   await expect(whatsappLink).toBeVisible();
   console.log("Whatsapp share button is visible");
-  
 });
-test("Meetanshi shipping per item", async ({
-  page,
-}) => {
+test("Meetanshi shipping per item", async ({ page }) => {
   await page.goto("https://shipping-per-item.myshopify.com/");
   await page.locator("#password").fill(process.env.password ?? "");
   await page.getByRole("button", { name: "Enter" }).click();
@@ -64,15 +57,12 @@ test("Meetanshi shipping per item", async ({
 
   // Select shipping method (verify .i4DWM selector)
   await page.locator(".i4DWM").click();
-  await expect(page.locator("#shipping_methods")).toContainText(
-    "3 To 4 Business Day"
-  );
+  await expect(
+    page.locator("//p[contains(text(), '3 To 4 Business Day')]")
+  ).toBeVisible();
   console.log("Shipping per item rate selected successfully");
-  
 });
-test("Meetanshi shipping Flow Rules", async ({
-  page,
-}) => {
+test("Meetanshi shipping Flow Rules", async ({ page }) => {
   await page.goto("https://shipflow-rules.myshopify.com/");
   await page.locator("#password").fill(process.env.password ?? "");
   await page.getByRole("button", { name: "Enter" }).click();
@@ -92,11 +82,10 @@ test("Meetanshi shipping Flow Rules", async ({
   // Use combobox for Address field
   await page.getByRole("combobox", { name: "Address" }).fill("waghawadi road"); // Or use selectOption if specific options are required
   await page.getByRole("textbox", { name: "City" }).fill("bhavnagar");
-  await page.getByRole("textbox", { name: "PIN code" }).fill("364007");
+  await page.getByRole("textbox", { name: "PIN code" }).fill("364005");
 
   // Select shipping method (verify .i4DWM selector)
   await page.locator(".i4DWM").click();
-  await expect(page.getByText("Rate Name")).toBeVisible();
+  await expect(page.locator("//p[text()='Rate Name']")).toBeVisible();
   console.log("Shipping zipcode Rate visible successfully");
-  
 });
