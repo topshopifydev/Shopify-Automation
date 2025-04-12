@@ -24,11 +24,23 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
-      - name: Run Playwright tests with HTML report
-        run: npx playwright test --reporter=html
+      - name: Run Playwright tests with retry on failure
+        run: |
+          set +e
+          echo "▶️ Running full test suite..."
+          npx playwright test --reporter=html
+          exit_code=$?
+
+          if [ $exit_code -ne 0 ]; then
+            echo "❌ Initial test run failed. Re-running failed tests..."
+            npx playwright test --last-failed --reporter=html
+            exit_code=$?
+          fi
+
+          exit $exit_code
         env:
-          password: ${{ secrets.PASSWORD }}
-        continue-on-error: true # ✅ Continue even if tests fail
+          PASSWORD: ${{ secrets.PASSWORD }}
+        continue-on-error: true  # Let the workflow continue to deploy the report
 
       - name: Upload Playwright report as artifact
         if: always()
@@ -40,7 +52,7 @@ jobs:
 
   deploy: # Deploy Playwright Report URL: https://<your-github-username>.github.io/<repo-name>/
     name: Deploy Playwright Report to GitHub Pages
-    if: always() # ✅ Always deploy report
+    if: always()  # Always run even if tests fail
     runs-on: ubuntu-latest
     needs: test
 
