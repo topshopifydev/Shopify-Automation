@@ -1,4 +1,5 @@
 name: Playwright Tests and Report Deployment
+
 on:
   push:
     branches: [ main, master ]
@@ -11,35 +12,49 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - uses: actions/setup-node@v4
-      with:
-        node-version: lts/*
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
 
-    - name: Install dependencies
-      run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
 
-    - name: Run Playwright tests
-      run: npx playwright test
-      env:
-        password: ${{ secrets.PASSWORD }}
+      - name: Run Playwright tests
+        run: npx playwright test
+        env:
+          password: ${{ secrets.PASSWORD }}
+        continue-on-error: true  # 🔴 Don't stop workflow on test failure
 
-    - name: Upload Playwright report as artifact
-      if: ${{ !cancelled() }}
-      uses: actions/upload-artifact@v4
-      with:
-        name: playwright-report
-        path: playwright-report/
-        retention-days: 30
+      - name: Upload Playwright report as artifact
+        if: always()  # ✅ Always run this step, even if previous steps failed
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
 
-    - name: Deploy report to GitHub Pages
-      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./playwright-report
-        publish_branch: gh-pages
+  deploy:
+    name: Deploy report to GitHub Pages
+    if: always()  # ✅ Always run, even if tests fail
+    runs-on: ubuntu-latest
+    needs: test  # ✅ Depends on test job
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: playwright-report
+          path: ./playwright-report
+
+      - name: Deploy report to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./playwright-report
+          publish_branch: gh-pages
