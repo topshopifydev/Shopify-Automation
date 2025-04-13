@@ -250,4 +250,40 @@ test.describe("Meetanshi Shopify Apps", () => {
       status: "true",
     });
   });
+  test("Meetanshi Countdown Timer Bar", async ({ page }) => {
+    await page.goto("https://countdown-bar.myshopify.com/");
+    await page.locator("#password").fill("mit");
+    await page.getByRole("button", { name: "Enter" }).click();
+    await expect(page.locator("#textarea_message")).toBeVisible();
+    await expect(page.locator("body")).toContainText(/New year sale is live/i);
+  });
+  test("MIT Festival Effects & Decor", async ({ page }) => {
+    await page.goto("https://festival-effects.myshopify.com/");
+    await page.locator("#password").fill("mit");
+    await page.getByRole("button", { name: "Enter" }).click();
+    await expect(
+      page.getByRole("heading", { name: "Festival Effects & Decor" })
+    ).toBeVisible();
+  });
+  test("MIT Festival Effects & Decor in collection page", async ({ page }) => {
+    await page.goto("https://festival-effects.myshopify.com/");
+    await page.locator("#password").fill("mit");
+    await page.getByRole("button", { name: "Enter" }).click();
+    const links = page.locator("a.button.button--secondary");
+    await expect(links).toHaveCount(50); // Replace 8 with your expected count
+  });
+  test("MIT WhatsApp chat", async ({ page, context }) => {
+    await page.goto("https://apps.shopify.com/search?q=meetanshi");
+    await page.waitForLoadState("domcontentloaded");
+
+    await page.getByRole("link", { name: "Meetanshi WhatsApp Chat" }).click();
+
+    // Wait for the new tab to open after clicking "View demo store"
+    const [newPage] = await Promise.all([
+      context.waitForEvent("page"), // wait for popup
+      page.getByRole("link", { name: "View demo store" }).click(),
+    ]);
+   // Assert the WhatsApp icon is visible
+    await expect(newPage.locator(".fa.fa-whatsapp")).toBeVisible();
+  });
 });
