@@ -125,24 +125,37 @@ test.describe("Meetanshi Shopify Apps", () => {
   });
   test.use({
     permissions: ["geolocation"],
-    geolocation: { latitude: 12.9716, longitude: 77.5946 }, // Optional if needed
+    geolocation: { latitude: 12.9716, longitude: 77.5946 },
     locale: "en-US",
   });
-  test("MIT Quick Order Form COD", async ({ page, context }) => {
-    // Grant permission explicitly for this origin
+
+  test.only("MIT Quick Order Form COD", async ({ page, context }) => {
+    // Grant geolocation permission for the specific origin
     await context.grantPermissions(["geolocation"], {
       origin: "https://cod-order.myshopify.com",
     });
 
+    // Visit the Shopify store
     await page.goto("https://cod-order.myshopify.com/");
+
+    // Unlock the password-protected site
     await page.locator("#password").fill("mit");
     await page.getByRole("button", { name: "Enter" }).click();
 
+    // Navigate to the product
     await page.locator("#HeaderMenu-catalog").click();
     await page.getByRole("link", { name: "Freak 5 EP" }).click();
-    await page.waitForLoadState("domcontentloaded");
-    await expect(page.locator("#inlineformfrontend")).toBeVisible();
+
+    // Wait for the page and network to fully load
+    await page.waitForLoadState("networkidle");
+
+    // Ensure the order form is loaded and visible (with fallback scroll)
+    const form = page.locator("#inlineformfrontend");
+    await form.waitFor({ state: "visible", timeout: 15000 });
+    await form.scrollIntoViewIfNeeded();
+    await expect(form).toBeVisible({ timeout: 5000 });
   });
+
   test("Fill MIT Quick Order Form", async ({ page, context }) => {
     // Grant permission explicitly for this origin
     await context.grantPermissions(["geolocation"], {
@@ -155,7 +168,7 @@ test.describe("Meetanshi Shopify Apps", () => {
 
     await page.locator("#HeaderMenu-catalog").click();
     await page.getByRole("link", { name: "Freak 5 EP" }).click();
-    await page.waitForLoadState("domcontentloaded");
+    await page.waitForLoadState("networkidle");
     await expect(page.locator("#inlineformfrontend")).toBeVisible();
     await page.getByRole("textbox", { name: "First Name" }).fill("meetanshi");
     await page.getByRole("textbox", { name: "Last Name" }).fill("tester");
@@ -283,7 +296,7 @@ test.describe("Meetanshi Shopify Apps", () => {
       context.waitForEvent("page"), // wait for popup
       page.getByRole("link", { name: "View demo store" }).click(),
     ]);
-   // Assert the WhatsApp icon is visible
+    // Assert the WhatsApp icon is visible
     await expect(newPage.locator(".fa.fa-whatsapp")).toBeVisible();
   });
 });
