@@ -129,7 +129,7 @@ test.describe("Meetanshi Shopify Apps", () => {
     locale: "en-US",
   });
 
-  test.only("MIT Quick Order Form COD", async ({ page, context }) => {
+  test("MIT Quick Order Form COD", async ({ page, context }) => {
     // Grant geolocation permission for the specific origin
     await context.grantPermissions(["geolocation"], {
       origin: "https://cod-order.myshopify.com",
