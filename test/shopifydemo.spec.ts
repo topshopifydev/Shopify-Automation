@@ -1,15 +1,44 @@
 import { test, expect } from "@playwright/test";
+import axios from "axios";
 
-test.describe.configure({ timeout: 60000 }); // 60 seconds
+const WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
 
-test.describe("Meetanshi Shopify Apps", () => {
+// Discord webhook after each test
+test.afterEach(async ({ browserName }, testInfo) => {
+  if (!WEBHOOK_URL) return;
+
+  const status = testInfo.status;
+  const emoji = status === "passed" ? "✅" : "❌";
+  const color = status === "passed" ? 3066993 : 15158332;
+  const title = `${emoji} ${testInfo.title}`;
+  const duration = (testInfo.duration / 1000).toFixed(2);
+
+  await axios.post(WEBHOOK_URL, {
+    embeds: [
+      {
+        title,
+        description: `**Result**: ${status?.toUpperCase()}\n**Browser**: ${browserName}\n**Duration**: ${duration}s`,
+        color,
+        timestamp: new Date().toISOString(),
+      },
+    ],
+  });
+});
+
+// Set global timeout for each describe block
+test.describe.configure({ timeout: 60000 });
+
+//
+// ------------- Test Suites ---------------
+//
+
+test.describe("PDF Catalog App Tests", () => {
   test("Meetanshi PDF Catalog", async ({ page, context }) => {
     await page.goto("https://pdfdemo.myshopify.com/");
     await page.locator("#password").fill("mit");
     await page.getByRole("button", { name: "Enter" }).click();
     await page.locator("#HeaderMenu-collection").click();
     await page.getByRole("link", { name: "Clothing" }).click();
-
     await expect(page.getByRole("button", { name: "Print Pdf" })).toBeVisible();
 
     const [newPage] = await Promise.all([
@@ -22,7 +51,9 @@ test.describe("Meetanshi Shopify Apps", () => {
     expect(title).toBe("Pdf Preview");
     console.log("PDF preview page opened successfully");
   });
+});
 
+test.describe("WhatsApp Share Button Tests", () => {
   test("Meetanshi Whatsapp share", async ({ page }) => {
     await page.goto("https://whatsapp-share-button.myshopify.com/");
     await page.locator("#password").fill("mit");
@@ -33,6 +64,9 @@ test.describe("Meetanshi Shopify Apps", () => {
     await expect(whatsappLink).toBeVisible();
     console.log("Whatsapp share button is visible");
   });
+});
+
+test.describe("Shipping Per Item App Tests", () => {
   test("Meetanshi shipping per item", async ({ page }) => {
     await page.goto("https://shipping-per-item.myshopify.com/");
     await page.locator("#password").fill("mit");
@@ -47,9 +81,9 @@ test.describe("Meetanshi Shopify Apps", () => {
     await page.getByRole("button", { name: "Add to cart" }).click();
 
     const checkoutButton = page.locator("#CartDrawer-Checkout");
-    await checkoutButton.waitFor({ state: "visible" }); // Wait for visibility
-    await checkoutButton.click(); // Click after ensuring visibility
-    // Fill checkout form with correct labels from snapshot
+    await checkoutButton.waitFor({ state: "visible" });
+    await checkoutButton.click();
+
     await page
       .getByRole("textbox", { name: "Email or mobile phone number" })
       .fill("meetanshi.tester@yopmail.com");
@@ -57,19 +91,20 @@ test.describe("Meetanshi Shopify Apps", () => {
       .getByRole("textbox", { name: "First name (optional)" })
       .fill("meetanshi");
     await page.getByRole("textbox", { name: "Last name" }).fill("tester");
-    // Use combobox for Address field
     await page
       .getByRole("combobox", { name: "Address" })
       .pressSequentially("Waghawadi Road Vidhyanagar", { delay: 500 });
     await page.getByRole("textbox", { name: "City" }).fill("Bhavnagar");
     await page.getByRole("textbox", { name: "PIN code" }).fill("364005");
-    // Select shipping method (verify .i4DWM selector)
     await page.locator(".i4DWM").click();
+
     await expect(
       page.locator("//p[contains(text(), '3 To 4 Business Day')]")
     ).toBeVisible();
-    // console.log("Shipping per item rate selected successfully");
   });
+});
+
+test.describe("Shipping Flow Rules App Tests", () => {
   test("Meetanshi shipping Flow Rules", async ({ page }) => {
     await page.goto("https://shipflow-rules.myshopify.com/");
     await page.locator("#password").fill("mit");
@@ -79,7 +114,7 @@ test.describe("Meetanshi Shopify Apps", () => {
     await page.getByRole("button", { name: "Add to cart" }).click();
     await page.locator(".cart-count-bubble").click();
     await page.locator("#checkout").click();
-    // Fill checkout form with correct labels from snapshot
+
     await page
       .getByRole("textbox", { name: "Email or mobile phone number" })
       .fill("meetanshi.tester@yopmail.com");
@@ -87,22 +122,25 @@ test.describe("Meetanshi Shopify Apps", () => {
       .getByRole("textbox", { name: "First name (optional)" })
       .fill("meetanshi");
     await page.getByRole("textbox", { name: "Last name" }).fill("tester");
-    // Use combobox for Address field
     await page
       .getByRole("combobox", { name: "Address" })
       .pressSequentially("Waghawadi Road Vidhyanagar", { delay: 500 });
-    // Or use selectOption if specific options are required
     await page.getByRole("textbox", { name: "City" }).fill("Bhavnagar");
     await page.getByRole("textbox", { name: "PIN code" }).fill("364005");
     await page.locator(".i4DWM").click();
-    await expect(
-      page.locator("//p[contains(text(), 'Rate Name')]")
-    ).toBeVisible();
-    console.log("Shipping zipcode Rate visible successfully");
+
+    await expect(async () => {
+      const rateText = page.locator("//p[contains(text(), 'Rate Name')]");
+      await expect(rateText).toBeVisible();
+    }).toPass({ timeout: 5000 });
   });
-  test("Check visibility of Meetanshi elements", async ({ page }) => {
-    await page.goto("https://apps.shopify.com/search?q=meetanshi"); // replace with your actual URL
+});
+
+test.describe("Meetanshi App Store Visibility Tests", () => {
+  test("Check visibility of Meetanshi APPS", async ({ page }) => {
+    await page.goto("https://apps.shopify.com/search?q=meetanshi");
     await page.waitForLoadState("domcontentloaded");
+
     const links = [
       "Meetanshi WhatsApp Chat",
       "Meetanshi PDF Product Catalog",
@@ -123,6 +161,9 @@ test.describe("Meetanshi Shopify Apps", () => {
     }
     console.log("All Meetanshi elements are visible");
   });
+});
+
+test.describe("Quick Order Form COD App Tests", () => {
   test.use({
     permissions: ["geolocation"],
     geolocation: { latitude: 12.9716, longitude: 77.5946 },
@@ -130,46 +171,34 @@ test.describe("Meetanshi Shopify Apps", () => {
   });
 
   test("MIT Quick Order Form COD", async ({ page, context }) => {
-    // Grant geolocation permission for the specific origin
     await context.grantPermissions(["geolocation"], {
       origin: "https://cod-order.myshopify.com",
     });
-
-    // Visit the Shopify store
     await page.goto("https://cod-order.myshopify.com/");
-
-    // Unlock the password-protected site
     await page.locator("#password").fill("mit");
     await page.getByRole("button", { name: "Enter" }).click();
-
-    // Navigate to the product
     await page.locator("#HeaderMenu-catalog").click();
     await page.getByRole("link", { name: "Freak 5 EP" }).click();
-
-    // Wait for the page and network to fully load
     await page.waitForLoadState("networkidle");
 
-    // Ensure the order form is loaded and visible (with fallback scroll)
     const form = page.locator("#inlineformfrontend");
     await form.waitFor({ state: "visible", timeout: 15000 });
     await form.scrollIntoViewIfNeeded();
-    await expect(form).toBeVisible({ timeout: 5000 });
+    await expect(form).toBeVisible();
   });
 
   test("Fill MIT Quick Order Form", async ({ page, context }) => {
-    // Grant permission explicitly for this origin
     await context.grantPermissions(["geolocation"], {
       origin: "https://cod-order.myshopify.com",
     });
-
     await page.goto("https://cod-order.myshopify.com/");
     await page.locator("#password").fill("mit");
     await page.getByRole("button", { name: "Enter" }).click();
-
     await page.locator("#HeaderMenu-catalog").click();
     await page.getByRole("link", { name: "Freak 5 EP" }).click();
     await page.waitForLoadState("networkidle");
     await expect(page.locator("#inlineformfrontend")).toBeVisible();
+
     await page.getByRole("textbox", { name: "First Name" }).fill("meetanshi");
     await page.getByRole("textbox", { name: "Last Name" }).fill("tester");
     await page
@@ -185,13 +214,17 @@ test.describe("Meetanshi Shopify Apps", () => {
       page.getByText("Keep the order number for your reference :)")
     ).toBeVisible();
   });
+});
+test.describe("Request Quote & Hide Price Tests", () => {
   test("MIT Request Quote & Hide Price", async ({ page }) => {
     await page.goto("https://callforpricelaravel.myshopify.com/");
     await page.locator("#password").fill("mit");
     await page.getByRole("button", { name: "Enter" }).click();
+
     const buttons = page.getByRole("button", { name: "Request for Quote" });
     await expect(buttons).toHaveCount(8);
   });
+
   test("MIT Request Quote & Hide Price in collection page", async ({
     page,
   }) => {
@@ -200,26 +233,29 @@ test.describe("Meetanshi Shopify Apps", () => {
     await page.getByRole("button", { name: "Enter" }).click();
     await page.getByRole("link", { name: "Catalog" }).click();
     await expect(page).toHaveURL(/\/collections\/all/);
-    const buttons = page.getByRole("button", { name: "Request for Quote" });
 
+    const buttons = page.getByRole("button", { name: "Request for Quote" });
     await expect(buttons.nth(0)).toBeVisible();
     await expect(buttons.nth(15)).toBeVisible();
   });
+
   test("Check MIT Request Quote Modal Popup", async ({ page }) => {
     await page.goto("https://callforpricelaravel.myshopify.com/");
     await page.locator("#password").fill("mit");
     await page.getByRole("button", { name: "Enter" }).click();
     await page.getByRole("link", { name: "Catalog" }).click();
     await expect(page).toHaveURL(/\/collections\/all/);
+
     await page
       .getByRole("button", { name: "Request for Quote" })
       .nth(0)
       .click();
-    expect(page.locator("#cfpmodal")).toBeVisible();
+    await expect(page.locator("#cfpmodal")).toBeVisible();
     await expect(
       page.getByRole("heading", { name: "Quote Inquiry Form" })
     ).toBeVisible();
   });
+
   test("Fill form of MIT Request Quote and assert response", async ({
     page,
   }) => {
@@ -227,13 +263,12 @@ test.describe("Meetanshi Shopify Apps", () => {
     await page.locator("#password").fill("mit");
     await page.getByRole("button", { name: "Enter" }).click();
     await page.getByRole("link", { name: "Catalog" }).click();
-
     await expect(page).toHaveURL(/\/collections\/all/);
+
     await page
       .getByRole("button", { name: "Request for Quote" })
       .nth(0)
       .click();
-
     await expect(page.locator("#cfpmodal")).toBeVisible();
     await expect(
       page.getByRole("heading", { name: "Quote Inquiry Form" })
@@ -247,7 +282,6 @@ test.describe("Meetanshi Shopify Apps", () => {
       .locator("#comment")
       .fill("Hi, I want to know about this product.");
 
-    // Intercept the POST request and wait for the response
     const [response] = await Promise.all([
       page.waitForResponse(
         (resp) =>
@@ -263,40 +297,52 @@ test.describe("Meetanshi Shopify Apps", () => {
       status: "true",
     });
   });
+});
+
+test.describe("Countdown Timer Bar Tests", () => {
   test("Meetanshi Countdown Timer Bar", async ({ page }) => {
     await page.goto("https://countdown-bar.myshopify.com/");
     await page.locator("#password").fill("mit");
     await page.getByRole("button", { name: "Enter" }).click();
+
     await expect(page.locator("#textarea_message")).toBeVisible();
     await expect(page.locator("body")).toContainText(/New year sale is live/i);
   });
+});
+
+test.describe("Festival Effects & Decor Tests", () => {
   test("MIT Festival Effects & Decor", async ({ page }) => {
     await page.goto("https://festival-effects.myshopify.com/");
     await page.locator("#password").fill("mit");
     await page.getByRole("button", { name: "Enter" }).click();
+
     await expect(
       page.getByRole("heading", { name: "Festival Effects & Decor" })
     ).toBeVisible();
   });
+
   test("MIT Festival Effects & Decor in collection page", async ({ page }) => {
     await page.goto("https://festival-effects.myshopify.com/");
     await page.locator("#password").fill("mit");
     await page.getByRole("button", { name: "Enter" }).click();
+
     const links = page.locator("a.button.button--secondary");
-    await expect(links).toHaveCount(50); // Replace 8 with your expected count
+    await expect(links).toHaveCount(50); // Adjust count if necessary
   });
+});
+
+test.describe("WhatsApp Chat Widget Tests", () => {
   test("MIT WhatsApp chat", async ({ page, context }) => {
     await page.goto("https://apps.shopify.com/search?q=meetanshi");
     await page.waitForLoadState("domcontentloaded");
 
     await page.getByRole("link", { name: "Meetanshi WhatsApp Chat" }).click();
 
-    // Wait for the new tab to open after clicking "View demo store"
     const [newPage] = await Promise.all([
-      context.waitForEvent("page"), // wait for popup
+      context.waitForEvent("page"),
       page.getByRole("link", { name: "View demo store" }).click(),
     ]);
-    // Assert the WhatsApp icon is visible
+
     await expect(newPage.locator(".fa.fa-whatsapp")).toBeVisible();
   });
 });
