@@ -310,6 +310,22 @@ test.describe("Countdown Timer Bar Tests", () => {
   });
 });
 
+test.describe("Recent Sales popup app Tests", () => {
+  test("Verify Meetanshi Recent sales popup visibility", async ({ page }) => {
+    await page.goto("https://salespopup-demo.myshopify.com/");
+    await page.locator("#password").fill("mit");
+    await page.getByRole("button", { name: "Enter" }).click();
+    // Wait for the element to be in the DOM
+    //await page.locator("#card5").waitFor({ state: "visible" });
+
+    // Check visibility
+    const card = page.locator("#card5");
+    await expect(card).toBeVisible();
+
+    // Optional: Scroll into view
+    //await page.locator("#card5").scrollIntoViewIfNeeded();
+  });
+});
 test.describe("Festival Effects & Decor Tests", () => {
   test("MIT Festival Effects & Decor", async ({ page }) => {
     await page.goto("https://festival-effects.myshopify.com/");
