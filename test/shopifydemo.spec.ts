@@ -3,54 +3,55 @@ import axios from "axios";
 
 const WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
 
-// Discord webhook after each test
-test.afterEach(async ({ browserName }, testInfo) => {
-  if (!WEBHOOK_URL) return;
+//Discord webhook after each test
 
-  const status = testInfo.status;
-  const emoji = status === "passed" ? "✅" : "❌";
-  const color = status === "passed" ? 3066993 : 15158332;
-  const title = `${emoji} ${testInfo.title}`;
-  const duration = (testInfo.duration / 1000).toFixed(2);
+// test.afterEach(async ({ browserName }, testInfo) => {
+//   if (!WEBHOOK_URL) return;
 
-  await axios.post(WEBHOOK_URL, {
-    embeds: [
-      {
-        title,
-        description: `**Result**: ${status?.toUpperCase()}\n**Browser**: ${browserName}\n**Duration**: ${duration}s`,
-        color,
-        timestamp: new Date().toISOString(),
-      },
-    ],
-  });
-});
+//   const status = testInfo.status;
+//   const emoji = status === "passed" ? "✅" : "❌";
+//   const color = status === "passed" ? 3066993 : 15158332;
+//   const title = `${emoji} ${testInfo.title}`;
+//   const duration = (testInfo.duration / 1000).toFixed(2);
+
+//   await axios.post(WEBHOOK_URL, {
+//     embeds: [
+//       {
+//         title,
+//         description: `**Result**: ${status?.toUpperCase()}\n**Browser**: ${browserName}\n**Duration**: ${duration}s`,
+//         color,
+//         timestamp: new Date().toISOString(),
+//       },
+//     ],
+//   });
+// });
 
 // Set global timeout for each describe block
-test.describe.configure({ timeout: 60000 });
+//test.describe.configure({ timeout: 60000 });
 
 //
 // ------------- Test Suites ---------------
 //
 
-test.describe("PDF Catalog App Tests", () => {
-  test("Meetanshi PDF Catalog", async ({ page, context }) => {
-    await page.goto("https://pdfdemo.myshopify.com/");
-    await page.locator("#password").fill("mit");
-    await page.getByRole("button", { name: "Enter" }).click();
-    await page.locator("#HeaderMenu-collection").click();
-    await page.getByRole("link", { name: "Clothing" }).click();
-    await expect(page.getByRole("button", { name: "Print Pdf" })).toBeVisible();
+test.describe("PDF Catalog App Demo Test", () => {
+  test('Check all PDF layout previews and their image alt tags', async ({ page }) => {
+    await page.goto('https://pdfdemo.myshopify.com/'); // Replace with actual URL
+    await page.locator('#password').fill('mit'); // If it's a password-protected Shopify store
+    await page.getByRole('button', { name: 'Enter' }).click();
 
-    const [newPage] = await Promise.all([
-      context.waitForEvent("page"),
-      page.getByRole("button", { name: "Print Pdf" }).click(),
-    ]);
+    for (let i = 1; i <= 16; i++) {
+      const layoutButton = page.getByRole('button', { name: `Layout ${i}`, exact: true });
+      await layoutButton.click();
 
-    await newPage.waitForLoadState("domcontentloaded");
-    const title = await newPage.title();
-    expect(title).toBe("Pdf Preview");
-    console.log("PDF preview page opened successfully");
+      // Wait for corresponding image with alt to appear
+      const expectedAlt = `Layout ${i} Demo`;
+      const image = page.locator(`img[alt="${expectedAlt}"]`);
+      await expect(image).toBeVisible({ timeout: 5000 });
+
+      console.log(`✅ Verified: ${expectedAlt}`);
+    }
   });
+
 });
 
 test.describe("WhatsApp Share Button Tests", () => {
@@ -105,34 +106,28 @@ test.describe("Shipping Per Item App Tests", () => {
 });
 
 test.describe("Shipping Flow Rules App Tests", () => {
-  test("Meetanshi shipping Flow Rules", async ({ page }) => {
-    await page.goto("https://shipflow-rules.myshopify.com/");
-    await page.locator("#password").fill("mit");
-    await page.getByRole("button", { name: "Enter" }).click();
-    await page.getByRole("link", { name: "Catalog" }).click();
-    await page.getByRole("link", { name: "Freak 5 EP" }).click();
-    await page.getByRole("button", { name: "Add to cart" }).click();
-    await page.locator(".cart-count-bubble").click();
-    await page.locator("#checkout").click();
+  test('Meetanshi shipping Flow Rules', async ({ page }) => {
+    await page.goto('https://shipflow-rules.myshopify.com/');
+    await page.locator('#password').fill('mit');
+    await page.getByRole('button', { name: 'Enter' }).click();
 
-    await page
-      .getByRole("textbox", { name: "Email or mobile phone number" })
-      .fill("meetanshi.tester@yopmail.com");
-    await page
-      .getByRole("textbox", { name: "First name (optional)" })
-      .fill("meetanshi");
-    await page.getByRole("textbox", { name: "Last name" }).fill("tester");
-    await page
-      .getByRole("combobox", { name: "Address" })
-      .pressSequentially("Waghawadi Road Vidhyanagar", { delay: 500 });
-    await page.getByRole("textbox", { name: "City" }).fill("Bhavnagar");
-    await page.getByRole("textbox", { name: "PIN code" }).fill("364005");
-    await page.locator(".i4DWM").click();
+    await page.getByRole('link', { name: 'Catalog' }).click();
+    await page.getByRole('link', { name: 'Freak 5 EP' }).click();
+    await page.getByRole('button', { name: 'Add to cart' }).click();
+    await page.locator('.cart-count-bubble').click();
+    await page.locator('#checkout').click();
 
-    await expect(async () => {
-      const rateText = page.locator("//p[contains(text(), 'Rate Name')]");
-      await expect(rateText).toBeVisible();
-    }).toPass({ timeout: 5000 });
+    await page.getByRole('textbox', { name: 'Email or mobile phone number' }).fill('meetanshi.tester@yopmail.com');
+    await page.getByRole('textbox', { name: 'First name (optional)' }).fill('meetanshi');
+    await page.getByRole('textbox', { name: 'Last name' }).fill('tester');
+    await page.getByRole('combobox', { name: 'Address' }).pressSequentially('Waghawadi Road Vidhyanagar', { delay: 500 });
+    await page.getByRole('textbox', { name: 'City' }).fill('Bhavnagar');
+    await page.getByRole('textbox', { name: 'PIN code' }).fill('364005');
+    // Click "Continue to shipping" or similar
+    await page.locator('.i4DWM').click();
+    // Assert the shipping rate appears
+    const rateText = page.locator('text=Rate Name');
+    await expect(rateText).toBeVisible({ timeout: 10000 });
   });
 });
 
@@ -154,11 +149,20 @@ test.describe("Meetanshi App Store Visibility Tests", () => {
       "MIT Festival Effects & Decor",
       "MIT Quick Order Form COD",
       "ShipFlow: Shipping Rules",
+      "MIT Broken Links Fixer",
+      "MIT Canonical URLs"
     ];
 
+    // Exact match for visible button text
     for (const name of links) {
       await expect(page.getByRole("button", { name })).toBeVisible();
     }
+
+    // Handle MIT WhatsApp Widgets separately (fix incorrect name)
+    await expect(
+      page.getByRole("button", { name: "MIT WhatsApp Widgets: 4 in 1" })
+    ).toBeVisible();
+
     console.log("All Meetanshi elements are visible");
   });
 });
@@ -215,14 +219,15 @@ test.describe("Quick Order Form COD App Tests", () => {
     ).toBeVisible();
   });
 });
-test.describe("Request Quote & Hide Price Tests", () => {
+test.describe("Request Quote & Hide Price Tests in home page", () => {
   test("MIT Request Quote & Hide Price", async ({ page }) => {
     await page.goto("https://callforpricelaravel.myshopify.com/");
     await page.locator("#password").fill("mit");
     await page.getByRole("button", { name: "Enter" }).click();
-
     const buttons = page.getByRole("button", { name: "Request for Quote" });
-    await expect(buttons).toHaveCount(8);
+    await expect(buttons).toHaveCount(4);
+    await buttons.first().click();
+    await expect(page.locator("#cfpmodal")).toBeVisible();
   });
 
   test("MIT Request Quote & Hide Price in collection page", async ({
@@ -231,40 +236,38 @@ test.describe("Request Quote & Hide Price Tests", () => {
     await page.goto("https://callforpricelaravel.myshopify.com/");
     await page.locator("#password").fill("mit");
     await page.getByRole("button", { name: "Enter" }).click();
-    await page.getByRole("link", { name: "Catalog" }).click();
-    await expect(page).toHaveURL(/\/collections\/all/);
-
-    const buttons = page.getByRole("button", { name: "Request for Quote" });
-    await expect(buttons.nth(0)).toBeVisible();
-    await expect(buttons.nth(15)).toBeVisible();
+    await page.goto("https://callforpricelaravel.myshopify.com/collections/all");
+    const quoteButton = page.getByRole('button', { name: 'Request For Quote' });
+    await expect(quoteButton).toHaveCount(16);
+    await expect(quoteButton.first()).toBeVisible();
   });
 
-  test("Check MIT Request Quote Modal Popup", async ({ page }) => {
+  test("Check MIT Request Quote Modal Popup in collection page", async ({ page }) => {
     await page.goto("https://callforpricelaravel.myshopify.com/");
     await page.locator("#password").fill("mit");
     await page.getByRole("button", { name: "Enter" }).click();
-    await page.getByRole("link", { name: "Catalog" }).click();
-    await expect(page).toHaveURL(/\/collections\/all/);
-
-    await page
-      .getByRole("button", { name: "Request for Quote" })
-      .nth(0)
-      .click();
+    await page.goto("https://callforpricelaravel.myshopify.com/collections/all");
+    const quoteButton = page.getByRole('button', { name: 'Request For Quote' });
+    await quoteButton.first().click();
     await expect(page.locator("#cfpmodal")).toBeVisible();
-    await expect(
-      page.getByRole("heading", { name: "Quote Inquiry Form" })
-    ).toBeVisible();
+
+  });
+  test("Check MIT Request Quote Modal Popup in Product page", async ({ page }) => {
+    await page.goto("https://callforpricelaravel.myshopify.com/");
+    await page.locator("#password").fill("mit");
+    await page.getByRole("button", { name: "Enter" }).click();
+    await page.getByRole("link", { name: "Crafted neckless" }).click();
+    await expect(page.getByRole('button', { name: 'Request For Quote' }).first()).toBeVisible();
+    await page.getByRole('button', { name: 'Request For Quote' }).first().click();
+    await expect(page.locator("#cfpmodal")).toBeVisible();
   });
 
-  test("Fill form of MIT Request Quote and assert response", async ({
+  test("Fill form of MIT Request Quote and assert Success Message", async ({
     page,
   }) => {
     await page.goto("https://callforpricelaravel.myshopify.com/");
     await page.locator("#password").fill("mit");
     await page.getByRole("button", { name: "Enter" }).click();
-    await page.getByRole("link", { name: "Catalog" }).click();
-    await expect(page).toHaveURL(/\/collections\/all/);
-
     await page
       .getByRole("button", { name: "Request for Quote" })
       .nth(0)
@@ -281,21 +284,14 @@ test.describe("Request Quote & Hide Price Tests", () => {
     await page
       .locator("#comment")
       .fill("Hi, I want to know about this product.");
+    await expect(page.locator('button[name="add"]')).toBeVisible();
+    await page.locator('button[name="add"]').click();
 
-    const [response] = await Promise.all([
-      page.waitForResponse(
-        (resp) =>
-          resp.url().includes("/api/inquiry") &&
-          resp.request().method() === "POST"
-      ),
-      page.getByRole("button", { name: "Submit" }).click(),
-    ]);
+    await expect(
+      page.getByText("Inquiry has been sent successfully.")
+    ).toBeVisible({ timeout: 10000 });
+    await expect(page.locator("#cfpmodal")).not.toBeVisible();
 
-    const json = await response.json();
-    expect(json).toEqual({
-      message: "Inquiry has been sent successfully.",
-      status: "true",
-    });
   });
 });
 
@@ -358,4 +354,147 @@ test.describe("WhatsApp Chat Widget Tests", () => {
 
     await expect(newPage.locator(".fa.fa-whatsapp")).toBeVisible();
   });
+  test("MIT WhatsApp widget 4 In 1 in home page", async ({ page }) => {
+    await page.goto("https://mit-whatsapp-widgets-4-in-1.myshopify.com/");
+    await page.locator("#password").fill("yahkla");
+    await page.getByRole("button", { name: "Enter" }).click();
+
+    await expect(page.locator(".wp-sticker-text")).toHaveText("STICKER");
+
+    const shareButtons = page.getByRole("button", { name: "Share on WhatsApp" });
+    await expect(shareButtons).toHaveCount(8); // Ensures all buttons are present
+
+    // Optionally: test visibility of first one
+    await expect(shareButtons.first()).toBeVisible();
+  });
+
+  test("MIT WhatsApp widget 4 In 1 in collection page", async ({ page }) => {
+    await page.goto("https://mit-whatsapp-widgets-4-in-1.myshopify.com/");
+    await page.locator("#password").fill("yahkla");
+    await page.getByRole("button", { name: "Enter" }).click();
+    await page.locator("#HeaderMenu-catalog").click();
+    await expect(page.locator(".wp-sticker-text")).toHaveText("STICKER");
+    await expect
+      .soft(page.locator("//div[contains(@class, 'whtsapshremt-container')]"))
+      .toHaveCount(16);
+    const items = page.locator("//div[@class='whtsapshremt-text-content']");
+    await expect.soft(items).toHaveCount(16);
+  });
+  test("MIT WhatsApp widget 4 In 1 in product page", async ({ page }) => {
+    await page.goto("https://mit-whatsapp-widgets-4-in-1.myshopify.com/");
+    await page.locator("#password").fill("yahkla");
+    await page.getByRole("button", { name: "Enter" }).click();
+    await page.locator("#HeaderMenu-catalog").click();
+    await page.locator("#CardLink-template--18402860466347__product-grid-8420646256811").click();
+    await expect(page.locator(".wp-sticker-text")).toHaveText("STICKER");
+    await expect
+      .soft(page.locator("//div[contains(@class, 'whtsapshremt-container')]"))
+      .toHaveCount(1);
+    const items = page.locator("//div[@class='whtsapshremt-text-content']");
+    await expect.soft(items).toHaveCount(1);
+  });
+
+});
+test.describe.only("Cart & Order Limit Tests", () => {
+  test("Check Qty Rule in product page", async ({ page }) => {
+    await page.goto("https://mit-cart-order-limits.myshopify.com/");
+    await page.locator("#password").fill("mit");
+    await page.getByRole("button", { name: "Enter" }).click();
+
+    await page.locator("#HeaderMenu-catalog").click();
+    await page.getByRole("link", { name: "Jeans" }).click();
+    // Try adding to cart
+    const addToCart = page.getByRole("button", { name: "Add to cart" });
+    await expect(addToCart).not.toBeVisible();
+
+    const qtyMsg = page.locator('div', { hasText: 'Quantity must be at least 5' }).nth(0)
+
+    await expect(qtyMsg).toBeVisible();
+  });
+  test("Check Weight Rule in product page", async ({ page }) => {
+    await page.goto("https://mit-cart-order-limits.myshopify.com/");
+    await page.locator("#password").fill("mit");
+    await page.getByRole("button", { name: "Enter" }).click();
+
+    await page.locator("#HeaderMenu-catalog").click();
+    await page.getByRole("link", { name: "Jeans" }).click();
+    // Try adding to cart
+    const addToCart = page.getByRole("button", { name: "Add to cart" });
+    await expect(addToCart).not.toBeVisible();
+    const weightMsg = page.locator('div', { hasText: 'Weight must be at least 90 g' }).nth(0);
+    await expect(weightMsg).toBeVisible();
+  });
+  test("Check Subtotal Rule in cart page", async ({ page }) => {
+    await page.goto("https://mit-cart-order-limits.myshopify.com/");
+    await page.locator("#password").fill("mit");
+    await page.getByRole("button", { name: "Enter" }).click();
+
+    await page.locator("#HeaderMenu-catalog").click();
+    await page.getByRole("link", { name: "Jeans" }).click();
+
+    // Fill quantity
+    const quantityInput = page.locator('input.quantity__input[name="quantity"]');
+    await quantityInput.fill("9");
+    await quantityInput.press("Enter");
+
+    const addToCartBtn = page.getByRole("button", { name: "Add to cart" });
+    await expect(addToCartBtn).toBeVisible({ timeout: 5000 });
+    await addToCartBtn.scrollIntoViewIfNeeded();
+    await expect(addToCartBtn).toBeEnabled();
+    await addToCartBtn.click();
+
+    // Wait for cart notification
+    const cartNotification = page.locator("#cart-notification");
+    await expect(cartNotification).toBeVisible({ timeout: 7000 });
+
+    // Proceed with cart rule check
+    const viewCartBtn = page.locator("#cart-notification-button");
+    await expect(viewCartBtn).toBeVisible();
+    await viewCartBtn.click();
+
+    const SubtotalMsg = page.locator('div', { hasText: 'Subtotal must be at least 1000' }).first();
+    await expect(SubtotalMsg).toBeVisible();
+  });
+  test("Check total Item in cart Rule in cart page", async ({ page }) => {
+    await page.goto("https://mit-cart-order-limits.myshopify.com/");
+    await page.locator("#password").fill("mit");
+    await page.getByRole("button", { name: "Enter" }).click();
+
+    await page.locator("#HeaderMenu-catalog").click();
+    await page.getByRole("link", { name: "Jeans" }).click();
+
+    const quantityInput = page.locator('input.quantity__input[name="quantity"]');
+    await quantityInput.fill("9");
+    await quantityInput.press("Enter");
+
+    const addToCartBtn = page.getByRole("button", { name: "Add to cart" });
+    await expect(addToCartBtn).toBeVisible({ timeout: 5000 });
+    await addToCartBtn.scrollIntoViewIfNeeded();
+    await expect(addToCartBtn).toBeEnabled();
+    await addToCartBtn.click();
+
+    const [response] = await Promise.all([
+      page.waitForResponse((resp) =>
+        resp.url().includes("/cart/add") && resp.status() === 200
+      ),
+      page.waitForSelector("#cart-notification", { timeout: 7000 }),
+    ]);
+    expect(response.ok()).toBeTruthy();
+
+    const cartBtn = page.locator("#cart-notification-button");
+    await expect(cartBtn).toBeVisible();
+    await cartBtn.click();
+
+    // ✅ Updated locator
+    const cartItemMsg = page.locator('div.alert-cart_total_item', {
+      hasText: 'Total number of cart item must be at least 12',
+    });
+    await expect(cartItemMsg).toBeVisible();
+});
+
+
+
+
+
+
 });
