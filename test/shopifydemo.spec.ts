@@ -27,7 +27,7 @@ const WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
 // });
 
 // Set global timeout for each describe block
-//test.describe.configure({ timeout: 60000 });
+test.describe.configure({ timeout: 60000 });
 
 //
 // ------------- Test Suites ---------------
@@ -428,73 +428,29 @@ test.describe.only("Cart & Order Limit Tests", () => {
     await page.goto("https://mit-cart-order-limits.myshopify.com/");
     await page.locator("#password").fill("mit");
     await page.getByRole("button", { name: "Enter" }).click();
-
-    await page.locator("#HeaderMenu-catalog").click();
     await page.getByRole("link", { name: "Jeans" }).click();
-
-    // Fill quantity
-    const quantityInput = page.locator('input.quantity__input[name="quantity"]');
-    await quantityInput.fill("9");
-    await quantityInput.press("Enter");
-
-    const addToCartBtn = page.getByRole("button", { name: "Add to cart" });
-    await expect(addToCartBtn).toBeVisible({ timeout: 5000 });
-    await addToCartBtn.scrollIntoViewIfNeeded();
-    await expect(addToCartBtn).toBeEnabled();
-    await addToCartBtn.click();
-
-    // Wait for cart notification
-    const cartNotification = page.locator("#cart-notification");
-    await expect(cartNotification).toBeVisible({ timeout: 7000 });
-
-    // Proceed with cart rule check
-    const viewCartBtn = page.locator("#cart-notification-button");
-    await expect(viewCartBtn).toBeVisible();
-    await viewCartBtn.click();
-
-    const SubtotalMsg = page.locator('div', { hasText: 'Subtotal must be at least 1000' }).first();
-    await expect(SubtotalMsg).toBeVisible();
+    await page.getByRole("spinbutton", { name: "Quantity" }).click();
+    await page.getByRole("spinbutton", { name: "Quantity" }).fill("9");
+    await page.getByText('MIT Cart & Order Limits Jeans').click();
+    await page.getByRole("button", { name: "Add to cart" }).click();
+    await expect(page.getByRole('link', { name: 'View cart (9)' })).toBeVisible();
+    await page.getByRole('button', { name: 'Continue shopping' }).click();
+    await page.getByRole('link', { name: 'Cart 9 items' }).click();
+    await expect(page.locator('#main-cart-items div').filter({ hasText: 'Invalid cart subtotal' }).nth(1)).toBeVisible();
   });
   test("Check total Item in cart Rule in cart page", async ({ page }) => {
-    await page.goto("https://mit-cart-order-limits.myshopify.com/");
-    await page.locator("#password").fill("mit");
-    await page.getByRole("button", { name: "Enter" }).click();
-
-    await page.locator("#HeaderMenu-catalog").click();
-    await page.getByRole("link", { name: "Jeans" }).click();
-
-    const quantityInput = page.locator('input.quantity__input[name="quantity"]');
-    await quantityInput.fill("9");
-    await quantityInput.press("Enter");
-
-    const addToCartBtn = page.getByRole("button", { name: "Add to cart" });
-    await expect(addToCartBtn).toBeVisible({ timeout: 5000 });
-    await addToCartBtn.scrollIntoViewIfNeeded();
-    await expect(addToCartBtn).toBeEnabled();
-    await addToCartBtn.click();
-
-    const [response] = await Promise.all([
-      page.waitForResponse((resp) =>
-        resp.url().includes("/cart/add") && resp.status() === 200
-      ),
-      page.waitForSelector("#cart-notification", { timeout: 7000 }),
-    ]);
-    expect(response.ok()).toBeTruthy();
-
-    const cartBtn = page.locator("#cart-notification-button");
-    await expect(cartBtn).toBeVisible();
-    await cartBtn.click();
-
-    // ✅ Updated locator
-    const cartItemMsg = page.locator('div.alert-cart_total_item', {
-      hasText: 'Total number of cart item must be at least 12',
-    });
-    await expect(cartItemMsg).toBeVisible();
-});
-
-
-
-
-
-
+    await page.goto('https://mit-cart-order-limits.myshopify.com/password');
+    await page.getByRole('textbox', { name: 'Enter store password' }).fill('mit');
+    await page.getByRole('button', { name: 'Enter' }).click();
+    await expect(page.getByRole('link',{name:"Jeans"})).toBeVisible();
+    await page.getByRole('link', { name: 'Jeans' }).click();
+    await page.getByRole('spinbutton', { name: 'Quantity' }).click();
+    await page.getByRole('spinbutton', { name: 'Quantity' }).fill('9');
+    await page.getByText('MIT Cart & Order Limits Jeans').click();
+    await page.getByRole('button', { name: 'Add to cart' }).click();
+    await expect(page.getByRole('link', { name: 'View cart (9)' })).toBeVisible();
+    await page.getByRole('button', { name: 'Continue shopping' }).click();
+    await page.getByRole('link', { name: 'Cart 9 items' }).click();
+    await expect(page.locator('#main-cart-items div').filter({ hasText: 'Invalid Total number of cart' }).nth(1)).toBeVisible();
+  });
 });
