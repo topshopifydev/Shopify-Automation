@@ -184,33 +184,22 @@ test.describe("Meetanshi App Store Visibility Tests", () => {
 });
 
 test.describe("Quick Order Form COD App Tests", () => {
-  test.use({
-    permissions: ["geolocation"],
-    geolocation: { latitude: 12.9716, longitude: 77.5946 },
-    locale: "en-US",
-  });
-
-  test("MIT Quick Order Form COD", async ({ page, context }) => {
-    await context.grantPermissions(["geolocation"], {
-      origin: "https://cod-order.myshopify.com",
-    });
+  test("MIT Quick Order Form COD", async ({ page }) => {
     await page.goto("https://cod-order.myshopify.com/");
     await page.locator("#password").fill("mit");
     await page.getByRole("button", { name: "Enter" }).click();
+
     await page.locator("#HeaderMenu-catalog").click();
     await page.getByRole("link", { name: "Freak 5 EP" }).click();
     await page.waitForLoadState("networkidle");
 
     const form = page.locator("#inlineformfrontend");
-    await form.waitFor({ state: "visible", timeout: 15000 });
+    await form.waitFor({ state: "visible", timeout: 20000 }); // increased timeout
     await form.scrollIntoViewIfNeeded();
     await expect(form).toBeVisible();
   });
 
   test("Fill MIT Quick Order Form", async ({ page, context }) => {
-    await context.grantPermissions(["geolocation"], {
-      origin: "https://cod-order.myshopify.com",
-    });
     await page.goto("https://cod-order.myshopify.com/");
     await page.locator("#password").fill("mit");
     await page.getByRole("button", { name: "Enter" }).click();
