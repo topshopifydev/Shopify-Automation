@@ -1,9 +1,26 @@
-import { test, expect } from "@playwright/test";
+import { test as base, chromium, expect } from "@playwright/test";
 import axios from "axios";
 
 const WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
 
 //Discord webhook after each test
+
+const test = base.extend<{}, { page: any, context: any }>({
+  context: async ({ }, use) => {
+    const context = await chromium.launchPersistentContext('', {
+      headless: true,
+      permissions: ['geolocation'],
+      geolocation: { latitude: 21.76, longitude: 72.15 },
+      locale: 'en-US',
+    });
+    await use(context);
+    await context.close();
+  },
+  page: async ({ context }, use) => {
+    const [page] = context.pages();
+    await use(page);
+  }
+});
 
 test.afterEach(async ({ browserName }, testInfo) => {
   if (!WEBHOOK_URL) return;

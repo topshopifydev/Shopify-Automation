@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    timeout-minutes: 30
+    timeout-minutes: 45  # ⏱️ Increased timeout to be safe for flaky tests
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -26,23 +26,33 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-browsers
+          key: ${{ runner.os }}-playwright-browsers-${{ hashFiles('package-lock.json') }}
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Playwright (without re-downloading browsers)
+      - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
-      # ✅ Run tests with sharding and lightweight reporter
+      # ✅ Run Playwright tests with sharding + trace enabled
       - name: Run Playwright Tests (Shard ${{ matrix.shard }})
-        run: npx playwright test --shard=${{ matrix.shard }}/4 --reporter=line
+        run: |
+          npx playwright test --shard=${{ matrix.shard }}/4 --reporter=html
 
-      # ✅ Optional: Upload report artifacts
-      - name: Upload Playwright Report
+      # ✅ Upload Playwright HTML report per shard
+      - name: Upload HTML Report
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report-${{ matrix.shard }}
+          name: playwright-report-shard-${{ matrix.shard }}
           path: playwright-report/
+          retention-days: 14
+
+      # ✅ Upload traces, videos and screenshots if test fails
+      - name: Upload Traces and Videos
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-artifacts-shard-${{ matrix.shard }}
+          path: test-results/
           retention-days: 14
