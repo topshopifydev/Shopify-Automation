@@ -5,26 +5,26 @@ const WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
 
 //Discord webhook after each test
 
-// test.afterEach(async ({ browserName }, testInfo) => {
-//   if (!WEBHOOK_URL) return;
+test.afterEach(async ({ browserName }, testInfo) => {
+  if (!WEBHOOK_URL) return;
 
-//   const status = testInfo.status;
-//   const emoji = status === "passed" ? "✅" : "❌";
-//   const color = status === "passed" ? 3066993 : 15158332;
-//   const title = `${emoji} ${testInfo.title}`;
-//   const duration = (testInfo.duration / 1000).toFixed(2);
+  const status = testInfo.status;
+  const emoji = status === "passed" ? "✅" : "❌";
+  const color = status === "passed" ? 3066993 : 15158332;
+  const title = `${emoji} ${testInfo.title}`;
+  const duration = (testInfo.duration / 1000).toFixed(2);
 
-//   await axios.post(WEBHOOK_URL, {
-//     embeds: [
-//       {
-//         title,
-//         description: `**Result**: ${status?.toUpperCase()}\n**Browser**: ${browserName}\n**Duration**: ${duration}s`,
-//         color,
-//         timestamp: new Date().toISOString(),
-//       },
-//     ],
-//   });
-// });
+  await axios.post(WEBHOOK_URL, {
+    embeds: [
+      {
+        title,
+        description: `**Result**: ${status?.toUpperCase()}\n**Browser**: ${browserName}\n**Duration**: ${duration}s`,
+        color,
+        timestamp: new Date().toISOString(),
+      },
+    ],
+  });
+});
 
 // Set global timeout for each describe block
 test.describe.configure({ timeout: 60000 });
@@ -122,12 +122,11 @@ test.describe("Shipping Flow Rules App Tests", () => {
     await page.getByRole('textbox', { name: 'Last name' }).fill('tester');
     await page.getByRole('combobox', { name: 'Address' }).pressSequentially('Waghawadi Road Vidhyanagar', { delay: 500 });
     await page.getByRole('textbox', { name: 'City' }).fill('Bhavnagar');
-    await page.getByRole('textbox', { name: 'PIN code' }).fill('364005');
+    await page.getByRole('textbox', { name: 'PIN code' }).fill('364004');
     // Click "Continue to shipping" or similar
     await page.locator('.i4DWM').click();
     // Assert the shipping rate appears
-    const rateText = page.locator('text=Rate Name');
-    await expect(rateText).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('radio', { name: 'Rate Name' })).toBeVisible({ timeout: 10000 });
   });
 });
 
@@ -309,7 +308,7 @@ test.describe("Countdown Timer Bar Tests", () => {
 test.describe("Recent Sales popup app Tests", () => {
   test("Verify Meetanshi Recent sales popup visibility", async ({ page }) => {
     await page.goto("https://salespopup-demo.myshopify.com/");
-    await page.locator("#password").fill("numohr");
+    await page.locator("#password").fill("mit");
     await page.getByRole("button", { name: "Enter" }).click();
     // Wait for the element to be in the DOM
     await page.locator("#card5").waitFor({ state: "visible" });
@@ -356,7 +355,7 @@ test.describe("WhatsApp Chat Widget Tests", () => {
   });
   test("MIT WhatsApp widget 4 In 1 in home page", async ({ page }) => {
     await page.goto("https://mit-whatsapp-widgets-4-in-1.myshopify.com/");
-    await page.locator("#password").fill("yahkla");
+    await page.locator("#password").fill("mit");
     await page.getByRole("button", { name: "Enter" }).click();
 
     await expect(page.locator(".wp-sticker-text")).toHaveText("STICKER");
@@ -370,19 +369,17 @@ test.describe("WhatsApp Chat Widget Tests", () => {
 
   test("MIT WhatsApp widget 4 In 1 in collection page", async ({ page }) => {
     await page.goto("https://mit-whatsapp-widgets-4-in-1.myshopify.com/");
-    await page.locator("#password").fill("yahkla");
+    await page.locator("#password").fill("mit");
     await page.getByRole("button", { name: "Enter" }).click();
     await page.locator("#HeaderMenu-catalog").click();
     await expect(page.locator(".wp-sticker-text")).toHaveText("STICKER");
-    await expect
-      .soft(page.locator("//div[contains(@class, 'whtsapshremt-container')]"))
-      .toHaveCount(16);
-    const items = page.locator("//div[@class='whtsapshremt-text-content']");
+    // Change the locator to target the "Share on WhatsApp" buttons
+    const items = page.getByRole("button", { name: "Share on WhatsApp" });
     await expect.soft(items).toHaveCount(16);
   });
   test("MIT WhatsApp widget 4 In 1 in product page", async ({ page }) => {
     await page.goto("https://mit-whatsapp-widgets-4-in-1.myshopify.com/");
-    await page.locator("#password").fill("yahkla");
+    await page.locator("#password").fill("mit");
     await page.getByRole("button", { name: "Enter" }).click();
     await page.locator("#HeaderMenu-catalog").click();
     await page.locator("#CardLink-template--18402860466347__product-grid-8420646256811").click();
@@ -395,7 +392,7 @@ test.describe("WhatsApp Chat Widget Tests", () => {
   });
 
 });
-test.describe.only("Cart & Order Limit Tests", () => {
+test.describe("Cart & Order Limit Tests", () => {
   test("Check Qty Rule in product page", async ({ page }) => {
     await page.goto("https://mit-cart-order-limits.myshopify.com/");
     await page.locator("#password").fill("mit");
@@ -428,6 +425,8 @@ test.describe.only("Cart & Order Limit Tests", () => {
     await page.goto("https://mit-cart-order-limits.myshopify.com/");
     await page.locator("#password").fill("mit");
     await page.getByRole("button", { name: "Enter" }).click();
+
+    // Updated line with the more specific locator for 'Jeans'
     await page.getByRole("link", { name: "Jeans" }).click();
     await page.getByRole("spinbutton", { name: "Quantity" }).click();
     await page.getByRole("spinbutton", { name: "Quantity" }).fill("9");
@@ -442,7 +441,7 @@ test.describe.only("Cart & Order Limit Tests", () => {
     await page.goto('https://mit-cart-order-limits.myshopify.com/password');
     await page.getByRole('textbox', { name: 'Enter store password' }).fill('mit');
     await page.getByRole('button', { name: 'Enter' }).click();
-    await expect(page.getByRole('link',{name:"Jeans"})).toBeVisible();
+    await expect(page.getByRole('link', { name: "Jeans" })).toBeVisible();
     await page.getByRole('link', { name: 'Jeans' }).click();
     await page.getByRole('spinbutton', { name: 'Quantity' }).click();
     await page.getByRole('spinbutton', { name: 'Quantity' }).fill('9');
