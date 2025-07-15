@@ -8,11 +8,12 @@ on:
 
 jobs:
   test:
-    timeout-minutes: 60
+    timeout-minutes: 30
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        shard: [1, 2]  # You can increase to [1, 2, 3, 4] if you have many tests
+        shard: [1, 2, 3, 4]  # 4 parallel shards
+
     steps:
       - uses: actions/checkout@v4
 
@@ -20,19 +21,28 @@ jobs:
         with:
           node-version: lts/*
 
+      # ✅ Cache Playwright browser binaries
+      - name: Cache Playwright Browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-browsers
+
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Playwright Browsers
+      - name: Install Playwright (without re-downloading browsers)
         run: npx playwright install --with-deps
 
-      - name: Run Playwright tests (Shard ${{ matrix.shard }})
-        run: npx playwright test --shard=${{ matrix.shard }}/2
+      # ✅ Run tests with sharding and lightweight reporter
+      - name: Run Playwright Tests (Shard ${{ matrix.shard }})
+        run: npx playwright test --shard=${{ matrix.shard }}/4 --reporter=line
 
+      # ✅ Optional: Upload report artifacts
       - name: Upload Playwright Report
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report-${{ matrix.shard }}
           path: playwright-report/
-          retention-days: 30
+          retention-days: 14
